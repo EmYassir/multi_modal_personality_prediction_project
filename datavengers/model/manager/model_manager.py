@@ -12,7 +12,7 @@ class BaselineModel:
         self.gender_categories = ["male", "female"]
         self.data_set, self.age_pred, self.gender_pred, self.ope_pred = None, None, None, None
         self.con_pred, self.ext_pred, self.agr_pred, self.neu_pred = None, None, None, None
-        self.profile_file_name = "Profile.csv"
+        self.profile_file_name = "/Profile/Profile.csv"
 
     def convert_age_to_category(self, age):
         for limit, category in self.age_categories.items():
@@ -30,17 +30,17 @@ class BaselineModel:
             "id": user_id,
             "age_group": self.age_pred,
             "gender": self.gender_pred,
-            "extrovert": self.ext_pred.astype(str),
-            "neurotic": self.neu_pred.astype(str),
-            "agreeable": self.agr_pred.astype(str),
-            "conscientious": self.con_pred.astype(str),
-            "open": self.ope_pred.astype(str)
+            "extrovert": str(self.ext_pred),
+            "neurotic": str(self.neu_pred),
+            "agreeable": str(self.agr_pred),
+            "conscientious": str(self.con_pred),
+            "open": str(self.ope_pred)
         })
-        file = open(f"{self.output_folder}{user_id}.xml", "w")
+        file = open(f"{self.output_folder}/{user_id}.xml", "w")
         file.write(et.tostring(user, encoding="unicode"))
 
     def train(self):
-        self.data_set = pd.read_csv(self.train_data_path + self.profile_file_name)
+        self.data_set = pd.read_csv(f"{self.train_data_path}/{self.profile_file_name}")
         self.data_set["gender"] = self.data_set["gender"].apply(self.convert_gender_to_category)
         self.data_set = self.data_set.assign(
             age_group=lambda df: self.data_set["age"].apply(self.convert_age_to_category)
@@ -57,7 +57,7 @@ class BaselineModel:
         self.neu_pred = self.data_set["neu"].mean()
 
     def compute_predictions(self):
-        test_data_set = pd.read_csv(self.test_data_path + self.profile_file_name)
+        test_data_set = pd.read_csv(f"{self.test_data_path}/{self.profile_file_name}")
         test_data_set["userid"].apply(self.write_to_xml)
 
 
