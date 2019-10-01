@@ -1,0 +1,32 @@
+#!/bin/bash -i
+
+# Obtain commandline arguments
+while getopts 'i:o:t:l:' OPTION; do
+  case "$OPTION" in
+    i)
+      TEST_PATH="-i ${OPTARG}"
+      ;;
+
+    o)
+      OUTPUT_PATH="-o ${OPTARG}"
+      ;;
+
+    t)
+      TRAIN_PATH="-t ${OPTARG}"
+      ;;
+
+    l)
+      LOAD_PATH="-l ${OPTARG}"
+      ;;
+
+    ?)
+      echo "script usage: $(basename $0) [-i TEST_DATA_SET_PATH] [-o OUTPUT_PATH] [-t TRAIN_DATA_SET_PATH] [-l LOAD_PATH]" >&2
+      exit 1
+      ;;
+  esac
+done
+shift "$((OPTIND -1))"
+
+# Execute the python script
+COMMAND="python main_predictor.py ${TEST_PATH} ${OUTPUT_PATH} ${TRAIN_PATH} ${LOAD_PATH}"
+eval "${COMMAND}"

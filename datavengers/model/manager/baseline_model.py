@@ -1,5 +1,6 @@
 import pandas as pd
 import xml.etree.ElementTree as et
+import pickle
 
 
 class BaselineModel:
@@ -39,6 +40,23 @@ class BaselineModel:
         file = open(f"{self.output_folder}/{user_id}.xml", "w")
         file.write(et.tostring(user, encoding="unicode"))
 
+    def dump(self, filename):
+        out = open(filename, "wb")
+        pickle.dump(self, out)
+        out.close()
+
+    def load(self, filename=None):
+        inf = open(filename, "rb")
+        model = pickle.load(inf)
+        inf.close()
+        self.age_pred = model.age_pred
+        self.gender_pred = model.gender_pred
+        self.ope_pred = model.ope_pred
+        self.con_pred = model.con_pred
+        self.ext_pred = model.ext_pred
+        self.agr_pred = model.agr_pred
+        self.neu_pred = model.neu_pred
+
     def train(self):
         self.data_set = pd.read_csv(f"{self.train_data_path}/{self.profile_file_name}")
         self.data_set["gender"] = self.data_set["gender"].apply(self.convert_gender_to_category)
@@ -59,21 +77,3 @@ class BaselineModel:
     def compute_predictions(self):
         test_data_set = pd.read_csv(f"{self.test_data_path}/{self.profile_file_name}")
         test_data_set["userid"].apply(self.write_to_xml)
-
-
-class ModelManager:
-
-    def __init__(self, train_data_path, test_data_path, output_path):
-        self.train_data_path = train_data_path
-        self.test_data_path = test_data_path
-        self.output_path = output_path
-        self.baseline_model = None
-
-    def train_all(self):
-        self.baseline_model = BaselineModel(self.train_data_path, self.test_data_path, self.output_path)
-        self.baseline_model.train()
-
-    def predict_all(self):
-        self.baseline_model.compute_predictions()
-
-
