@@ -16,7 +16,7 @@ class Personality(Predictor):
 
     def __init__(self):
         super().__init__()
-        self._layers = tuple([50,100,50])
+        self._layers = tuple([100,])
         self._model = None
         
     
