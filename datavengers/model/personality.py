@@ -14,14 +14,11 @@ from datavengers.model.predictor import Predictor
 
 class Personality(Predictor):
 
-    def __init__(self, use_predefined_model = False):
+    def __init__(self):
         super().__init__()
-        self._layers = tuple([50,100,50])
-        if use_predefined_model == False:
-            self._model = MLPRegressor(hidden_layer_sizes=self._layers)
-        else:
-            fd = open('./datavengers/persistence/personality/personality.model', 'rb')
-            self._model = pkl.load(fd)
+        self._layers = tuple([100,])
+        self._model = None
+        
     
     def _rescale(self, x, oldmin, oldmax, newmin, newmax):
         coeff = float((newmax-newmin)/(oldmax - oldmin))
@@ -75,24 +72,26 @@ class Personality(Predictor):
         return pca.fit_transform(X)
     
     def _extract_features(self, X):
-        return X[:, 1:-1] # removing positiveness 
+        # removing positiveness ?
+        return X[:, 1:-1] 
     
     def _rescale_features(self, X):
-        return X[:, 1:-1] # removing positiveness 
+        # rescale 'surprise'
+        return X[:, 1:-1] 
     
     def _process(self, raw_data):
         df = self._process_raw_data(raw_data)
         X, y = self._preprocess_data(df)
-        #X = self._transform_data(X)
-        X = self._extract_features(X)
+        #X = self._transform_data(X)   # DO NOT USE NOW
+        #X = self._extract_features(X) # DO NOT USE NOW
         return X, y
     
     # Public methods
-
     def train(self, raw_train_data):
         # Preprocess
         X, y = self._process(raw_train_data)
         # Training
+        self._model = MLPRegressor(hidden_layer_sizes=self._layers)
         self._model.fit(X, y)
         
         # Train on
@@ -108,7 +107,10 @@ class Personality(Predictor):
         
         # Split data
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15)
+        print(X_train.shape)
+        print(X_test.shape)
         # Train on train data
+        self._model = MLPRegressor(hidden_layer_sizes=self._layers)
         self._model.fit(X_train, y_train)
         
         # Predict on train and test sets
@@ -126,9 +128,9 @@ class Personality(Predictor):
         self._model = new_model
     
     def load_model(self):
-        fd = open('./datavengers/persistence/personality/personality.model', 'r')
-        self._model = pkl.load(fd)
+        with open('./datavengers/persistence/personality/personality.model', 'rb') as fd:
+            self._model = pkl.load(fd)
     
     def save_model(self):
-        fd = open('./datavengers/persistence/personality/personality.model', 'wb')
-        pkl.dump(self._model, fd) 
+        with open('./datavengers/persistence/personality/personality.model', 'wb') as fd:
+            pkl.dump(self._model, fd) 

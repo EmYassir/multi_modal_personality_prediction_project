@@ -1,3 +1,4 @@
 /output/
 .idea/*
+./datavengers/model/__pycache__/*
 
