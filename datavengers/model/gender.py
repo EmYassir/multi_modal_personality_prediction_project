@@ -16,7 +16,7 @@ class Gender(Predictor):
     
     def load_pretrained_model(self):
       infile = open('./datavengers/persistence/gender/gender.model','rb')
-      self._probas_table = np.asarray(pickle.load(infile, encoding='bytes'))
+      self._proba_table = np.asarray(pickle.load(infile, encoding='bytes'))
       infile.close()
       self.set_proba_dict()
       # end of method
