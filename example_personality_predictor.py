@@ -32,7 +32,7 @@ test_data_wrapper = Data(liwc_test, nrc_test, rel_test, oxf_test, pro_test)
     
 print('Instantiating model: Calling with no arguments (\'\')...')
 model = Personality()
-print('Fitting model...')
+print('Fitting model...') # Method only used for testing!!!
 model.fit(train_data_wrapper)
 print('Re-training model on the whole set...')
 model.train(train_data_wrapper)
