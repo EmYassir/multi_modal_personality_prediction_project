@@ -28,5 +28,5 @@ done
 shift "$((OPTIND -1))"
 
 # Execute the python script
-COMMAND="python main_predictor.py ${TEST_PATH} ${OUTPUT_PATH} ${TRAIN_PATH} ${LOAD_PATH}"
+COMMAND="python master.py ${TEST_PATH} ${OUTPUT_PATH} ${TRAIN_PATH} ${LOAD_PATH}"
 eval "${COMMAND}"

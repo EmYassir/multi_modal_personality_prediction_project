@@ -26,17 +26,17 @@ class Data:
         self._profiles = pd.read_csv(csv_file)
 
     # Getters
-    def get_liwc(self,csv_file) :
+    def get_liwc(self) :
         return self._liwc
 
-    def get_nrc(self,csv_file) :
+    def get_nrc(self) :
         return self._nrc
     
-    def get_relation(self,csv_file) :
+    def get_relation(self) :
         return self._relation
 
-    def get_oxford(self,csv_file) :
+    def get_oxford(self) :
         return self._oxford
 
-    def get_profiles(self,csv_file) :
+    def get_profiles(self) :
         return self._profiles
