@@ -1,5 +1,10 @@
 from predictor import Predictor
+from data import Data
 
+import pandas as pd
+import numpy as np
+
+import time
 
 class Gender(Predictor):
 
