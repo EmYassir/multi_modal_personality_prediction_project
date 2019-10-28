@@ -53,8 +53,8 @@ class Gender(Predictor):
         
         scores = np.true_divide(scores, scores.sum(axis=1, keepdims=True))
         temp=np.array(page_ids)[:,np.newaxis]
-        _proba_table = np.hstack((temp,scores))
-        set_proba_dict()
+        self._proba_table = np.hstack((temp,scores))
+        self.set_proba_dict()
         # end of method
       
     def extract_likes(self,uid,relation):
