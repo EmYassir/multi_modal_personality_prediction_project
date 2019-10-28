@@ -72,8 +72,8 @@ class Gender(Predictor):
       F = 0.0     
       n = len(indexes)
       for index in indexes:   
-        M += _proba_table[index][1]/n
-        F += _proba_table[index][2]/n     
+        M += self._proba_table[index][1]/n
+        F += self._proba_table[index][2]/n     
       if (M == F):
         return randint(0,1)
       else:
