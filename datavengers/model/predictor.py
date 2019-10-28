@@ -2,7 +2,7 @@
 
 class Predictor:
 
-    def __init__(self, useExisting = False):
+    def __init__(self):
         pass
     
     def load_model(self):

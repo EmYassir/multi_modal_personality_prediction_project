@@ -6,7 +6,7 @@ Created on Sun Oct 27 13:08:49 2019
 
 Simple example to show how to use the predictor 
 """
-
+import numpy as np
 from datavengers.model.data import Data
 from datavengers.model.predictor import Predictor
 from datavengers.model.personality import Personality
@@ -36,17 +36,18 @@ print('Fitting model...')
 model.fit(train_data_wrapper)
 print('Re-training model on the whole set...')
 model.train(train_data_wrapper)
+model.save_model()
 print('Generating predictions on the test set...')
 pred1 = model.predict(test_data_wrapper)
 print('-> predicted:')
 print(pred1)
-print('Serializing model...')
-model.save_model()
-print('Loading model: Calling with \'use_predefined_model\' = True...')
-model = Personality(True)
+
+print('Loading model: Use of pre-trained model...')
+model.load_model()
 print('Generating predictions on the test set...')
 pred2 = model.predict(test_data_wrapper)
 print('-> predicted:')
 print(pred2)
-print('Re-serializing model...')
-model.save_model()
+print('-> difference:')
+print(np.sum(pred1 - pred2, axis = 0))
+print('Serializing model...')
