@@ -2,3 +2,4 @@
 .idea/*
 ./datavengers/model/__pycache__/*
 
+*.pyc
