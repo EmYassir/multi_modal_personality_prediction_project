@@ -1,5 +1,4 @@
 /output/
-.idea/*
-./datavengers/model/__pycache__/*
+/data/
 
 *.pyc

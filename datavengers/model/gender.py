@@ -1,10 +1,9 @@
-from predictor import Predictor
-from data import Data
-
 import pandas as pd
 import numpy as np
-import pickle as pkl
+import pickle as pickle
+
 from random import randint
+from datavengers.model.predictor import Predictor
 
 
 class Gender(Predictor):
@@ -16,7 +15,7 @@ class Gender(Predictor):
     
     def load_pretrained_model(self):
       infile = open('./datavengers/persistence/gender/gender.model','rb')
-      self._probas_table = np.asarray(pickle.load(infile, encoding='bytes'))
+      self._proba_table = np.asarray(pickle.load(infile, encoding='bytes'))
       infile.close()
       self.set_proba_dict()
       # end of method

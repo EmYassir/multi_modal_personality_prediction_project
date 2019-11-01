@@ -5,9 +5,9 @@ import pickle
 
 class BaselineModel:
 
-    def __init__(self, train_data_path, test_data_path, output_folder):
-        self.train_data_path = train_data_path
-        self.test_data_path = test_data_path
+    def __init__(self, train_data_set, test_data_set, output_folder):
+        self.data_set = train_data_set
+        self.test_set = test_data_set
         self.output_folder = output_folder
         self.age_categories = {24: "xx-24", 34: "25-34", 49: "35-49", 1000: "50-xx"}
         self.gender_categories = ["male", "female"]
@@ -58,7 +58,7 @@ class BaselineModel:
         self.neu_pred = model.neu_pred
 
     def train(self):
-        self.data_set = pd.read_csv(f"{self.train_data_path}/{self.profile_file_name}")
+        # self.data_set = pd.read_csv(f"{self.train_data_path}/{self.profile_file_name}")
         self.data_set["gender"] = self.data_set["gender"].apply(self.convert_gender_to_category)
         self.data_set = self.data_set.assign(
             age_group=lambda df: self.data_set["age"].apply(self.convert_age_to_category)
@@ -75,5 +75,5 @@ class BaselineModel:
         self.neu_pred = self.data_set["neu"].mean()
 
     def compute_predictions(self):
-        test_data_set = pd.read_csv(f"{self.test_data_path}/{self.profile_file_name}")
-        test_data_set["userid"].apply(self.write_to_xml)
+        # test_data_set = pd.read_csv(f"{self.test_data_path}/{self.profile_file_name}")
+        self.test_set["userid"].apply(self.write_to_xml)
