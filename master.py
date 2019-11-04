@@ -1,6 +1,7 @@
 import argparse
 import xml.etree.ElementTree as et
 
+from datavengers.model.age_predictor import AgePredictor
 from datavengers.model.baseline_model import BaselineModel
 from datavengers.model.data import Data
 from datavengers.model.gender import Gender
@@ -10,16 +11,19 @@ from datavengers.model.personality import Personality
 class Master:
 
     def __init__(self, train_data_path, load_path, output_path):
-        self.train_data = Data(f"{train_data_path}/Text/liwc.csv",
-                          f"{train_data_path}/Text/nrc.csv",
-                          f"{train_data_path}/Relation/Relation.csv",
-                          f"{train_data_path}/Image/oxford.csv",
-                          f"{train_data_path}/Profile/Profile.csv")
+        self.train_data = None
+        if train_data_path is not None:
+            self.train_data = Data(f"{train_data_path}/Text/liwc.csv",
+                              f"{train_data_path}/Text/nrc.csv",
+                              f"{train_data_path}/Relation/Relation.csv",
+                              f"{train_data_path}/Image/oxford.csv",
+                              f"{train_data_path}/Profile/Profile.csv")
         self.load_path = load_path
         self.output_path = output_path
         self._baseline_model = None
         self.gender_prediction_model = None
         self.personality_prediction_model = None
+        self.age_prediction_model = None
 
     def _write_to_xml(self, user_id, age_group, gender, ext, neu, agr, con, ope):
         user = et.Element("user", {
@@ -51,17 +55,23 @@ class Master:
             self.personality_prediction_model = Personality()
             self.personality_prediction_model.load_model()
 
+    def _set_age_model(self, pre_trained=True):
+        if pre_trained:
+            self.age_prediction_model = AgePredictor()
+            self.age_prediction_model.load_model()
+
     def get_predictions(self, test_data):
         test_profiles = test_data.get_profiles()
-        self._set_baseline_model(test_data.get_profiles())
         self._set_gender_model()
         self._set_personality_model()
+        self._set_age_model()
         gender_preds = self.gender_prediction_model.predict(test_data)
         perso_preds = self.personality_prediction_model.predict(test_data)
+        age_preds = self.age_prediction_model.predict(test_data)
 
-        for uid, g, pp in zip(test_profiles["userid"], gender_preds, perso_preds):
+        for uid, g, pp, age in zip(test_profiles["userid"], gender_preds, perso_preds, age_preds):
             ope, con, ext, agr, neu = pp[0], pp[1], pp[2], pp[3], pp[4]
-            self._write_to_xml(uid, self._baseline_model.age_pred, g, ext, neu, agr, con, ope)
+            self._write_to_xml(uid, age, g, ext, neu, agr, con, ope)
 
 
 if __name__ == "__main__":

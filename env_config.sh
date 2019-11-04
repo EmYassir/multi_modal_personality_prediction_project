@@ -9,5 +9,5 @@ conda init bash
 conda activate datavengers
 yes | conda install numpy
 yes | conda install pandas
-yes | conda install scikit-learn
+yes | conda install scikit-learncon
 chmod +x ift6758
