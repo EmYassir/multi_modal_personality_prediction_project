@@ -5,7 +5,7 @@ from datavengers.model.age_predictor import AgePredictor
 from datavengers.model.baseline_model import BaselineModel
 from datavengers.model.data import Data
 from datavengers.model.gender import Gender
-from datavengers.model.personality import Personality
+from datavengers.model.personality.personality import Personality
 
 
 class Master:
