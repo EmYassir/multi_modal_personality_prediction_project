@@ -20,13 +20,13 @@ class Personality(Predictor):
     def __init__(self):
         super().__init__()
         self._liwc_data = {}
-        self._targets = np.array(['ope','con','ext','agr','neu'])
-        self._models = {'ope' : LinearRegression()  , 
-                        'con' : Ridge(alpha=.1)  , 
-                        #'ext' : SVR(kernel='rbf', C=100, gamma=1.0, epsilon=.1) , 
-                        'ext' : Ridge(alpha=.1)  , 
-                        'agr' : Ridge(alpha=.1)  , 
-                        'neu':Ridge(alpha=.01)}
+        self._targets = np.array(['ope','neu','ext','agr','con'])
+        self._models = {
+                'ope' : Ridge(alpha=0.1), 
+                'con' : Ridge(alpha=0.1), 
+                'ext' : Ridge(alpha=1.0), 
+                'agr' : Ridge(alpha=0.6), 
+                'neu':  Ridge(alpha=0.9)}
         self._selected_features = {}
         
     def _preprocess_data(self, raw_data, dic):

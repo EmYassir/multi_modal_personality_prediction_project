@@ -36,12 +36,14 @@ predictor = Personality()
 print('Fitting model...') # Method only used for testing!!!
 accs = predictor.fit(train_data_wrapper)
 print('Printing results:') 
-for k, v in accs.items():
-    print('\'%s\' : %.3f ' %(k, round(v * 100.0, 3)))
+targets = np.array(['ope','neu','ext','agr','con'])
+for k in targets:
+    print('\'%s\' : %.3f ' %(k, round(accs[k] * 100.0, 3)))
     
 
 print('Re-training model on the whole set...')
 predictor.train(train_data_wrapper)
+print('Serializing model...')
 predictor.save_model()
 print('Generating predictions on the test set...')
 pred1 = predictor.predict(test_data_wrapper)
@@ -56,5 +58,3 @@ print('-> predicted:')
 print(pred2)
 print('-> difference:')
 print(np.sum(pred1 - pred2, axis = 0))
-print('Serializing model...')
-predictor.save_model()
