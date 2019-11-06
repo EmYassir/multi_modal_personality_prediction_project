@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from sklearn.pipeline import Pipeline
 
-from datavengers.model.predictor import Predictor
+#from datavengers.model.predictor import Predictor
 
 class Gender():
     def __init__(self):
@@ -25,7 +25,9 @@ class Gender():
     def format_relations(self, raw_relation_data):
       relations = raw_relation_data
       relations['like_id'] = raw_relation_data['like_id'].astype(str)
+      relations['like_id'] = raw_relation_data['like_id'].astype(str)
       merged_relations = relations.groupby('userid')['like_id'].apply((lambda x: "%s" % ' '.join(x))).reset_index()
+      print(merged_relations.head)
       return merged_relations
     
     def train(self, raw_train_data, preTrained = 'True'):  
@@ -45,7 +47,7 @@ class Gender():
 
         self._model = Pipeline([('vect', CountVectorizer()),
                 ('tfidf', TfidfTransformer()),
-                ('clf', LogisticRegression(n_jobs=1, C=1e5, solver='saga')),
+                ('clf', LogisticRegression(n_jobs=1, C=1e5, solver='liblinear')),
                ])
         
         self._model.fit(X, y)
