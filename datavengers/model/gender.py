@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from sklearn.pipeline import Pipeline
 
-#from datavengers.model.predictor import Predictor
+from datavengers.model.predictor import Predictor
 
 class Gender():
     def __init__(self):
