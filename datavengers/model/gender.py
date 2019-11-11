@@ -27,7 +27,7 @@ class Gender():
       relations['like_id'] = raw_relation_data['like_id'].astype(str)
       relations['like_id'] = raw_relation_data['like_id'].astype(str)
       merged_relations = relations.groupby('userid')['like_id'].apply((lambda x: "%s" % ' '.join(x))).reset_index()
-      print(merged_relations.head)
+      #print(merged_relations['like_id'][0])
       return merged_relations
     
     def train(self, raw_train_data, preTrained = 'True'):  
