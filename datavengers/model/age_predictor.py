@@ -151,10 +151,10 @@ class AgePredictor(Predictor):
         rel_preds = self._rel_clf.predict(X_rel)
         txt_preds = self._txt_clf.predict(X_txt)
 
-        for i, (r, t) in enumerate(zip(rel_preds, txt_preds)):
-            if t == majority_class:
-                if r != majority_class:
-                    txt_preds[i] = r
+        # for i, (r, t) in enumerate(zip(rel_preds, txt_preds)):
+        #     if t == majority_class:
+        #         if r != majority_class:
+        #             txt_preds[i] = r
         # txt_preds.to_csv(path_or_buf="/home/alexpehpeh/PycharmProjects/IFT6758_Project/datavengers/persistence/res.csv")
         return txt_preds
 
