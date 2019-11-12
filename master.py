@@ -70,7 +70,7 @@ class Master:
         age_preds = self.age_prediction_model.predict(test_data)
 
         for uid, g, pp, age in zip(test_profiles["userid"], gender_preds, perso_preds, age_preds):
-            ope, con, ext, agr, neu = pp[0], pp[1], pp[2], pp[3], pp[4]
+            ope, neu, ext, agr, con = pp[0], pp[1], pp[2], pp[3], pp[4]
             self._write_to_xml(uid, age, g, ext, neu, agr, con, ope)
 
 
