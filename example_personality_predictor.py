@@ -39,7 +39,6 @@ accs = regressor.fit(train_data_wrapper)
 #targets = np.array(['ope','neu','ext','agr','con'])
 #for k in targets:
 #    print('\'%s\' : %.3f ' %(k, round(accs[k] * 100.0, 3)))
-    
 
 print('Re-training model on the whole set...')
 regressor.train(train_data_wrapper)

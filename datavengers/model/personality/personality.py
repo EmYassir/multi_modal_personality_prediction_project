@@ -104,7 +104,7 @@ class Personality(Predictor):
     def load_model(self):
         with open('./datavengers/persistence/personality/personality.model', 'rb') as fd:
             n_obj = pkl.load(fd)
-            self._targets = n_obj._targets
+            self._targets = cp.deepcopy(n_obj._targets)
             self._nrc_models =  cp.deepcopy(n_obj._nrc_models)
             self._liwc_models = cp.deepcopy(n_obj._liwc_models)
             self._data_util =  cp.deepcopy(n_obj._data_util)
