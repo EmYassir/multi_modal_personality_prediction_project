@@ -1,15 +1,21 @@
 import numpy as np
 import pandas as pd
 import pickle as pkl
+import copy as cp
 
 from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
 from sklearn.preprocessing import normalize
 
 from datavengers.model.personality.data_util import Data_Util
 from datavengers.model.personality.model_util import Model_Util
+from datavengers.model.personality.regressor_util import Regressor_Util
+
 from datavengers.model.predictor import Predictor 
+
+
 
 
 
@@ -19,145 +25,90 @@ class Personality(Predictor):
 
     def __init__(self):
         super().__init__()
-        self._liwc_data = {}
         self._targets = np.array(['ope','neu','ext','agr','con'])
-        self._models = {
-                'ope' : Ridge(alpha=0.1), 
-                'con' : Ridge(alpha=0.1), 
-                'ext' : Ridge(alpha=1.0), 
-                'agr' : Ridge(alpha=0.6), 
-                'neu':  Ridge(alpha=0.9)}
-        self._selected_features = {}
+        self._nrc_models = {
+                'ope' : Lasso(alpha = 1.0), 
+                'con' : Lasso(alpha = 1.0), 
+                'ext' : Lasso(alpha = 1.0), 
+                'agr' : Lasso(alpha = 1.0), 
+                'neu':  Lasso(alpha = 1.0)}
+        self._liwc_models = {
+                'ope' : Lasso(alpha = 1.0), 
+                'con' : Lasso(alpha = 1.0), 
+                'ext' : Lasso(alpha = 1.0), 
+                'agr' : Lasso(alpha = 1.0), 
+                'neu':  Lasso(alpha = 1.0)}
+        self._data_util =  Data_Util()
+        self._reg_util =  Regressor_Util()
         
-    def _preprocess_data(self, raw_data, dic):
-        liwc_df = raw_data.get_liwc()
-        profiles_df = raw_data.get_profiles()
-        data_util = Data_Util()
-        for t in self._targets:
-            dic[t] = data_util.build_df_with_target(liwc_df, profiles_df, t)
-        return profiles_df.shape[0]
+    def _preprocess_data(self, raw_data):
+        nrc_data = raw_data.get_nrc()
+        liwc_data = raw_data.get_liwc()
+        profile_data = raw_data.get_profiles()
+        
+        X_nrc = self._data_util.get_feats(nrc_data , columns_to_remove = [], transform = 'normalize')
+        X_liwc = self._data_util.get_feats(liwc_data, columns_to_remove = [], transform = 'normalize')
+        y = self._data_util.extract_targets(profile_data)
+        return X_nrc, X_liwc, y
     
     # Public methods
     def train(self, raw_train_data):
+        print('Train function ...')
         print('Preprocessing...')
         # Preprocess data
-        self._preprocess_data(raw_train_data, self._liwc_data)
-        
-        # Model utility
-        model_util = Model_Util()
-        
-        # Training
-        for k, v in self._liwc_data.items():
-            print('Target %s:' %k)
-            print('Selecting features...')
-            X = v.iloc[:,1:-1]
-            y = v.iloc[:,-1]
-            columns =  model_util.select_features(X, y)
-            # Save selected features
-            self._selected_features[k] = columns
-            X_sel = X[columns]
-            print('Normalizing...')
-            X_normalized = normalize(X_sel, axis = 0)
-    
-            print('Fitting ...')
-            model_util.train_model(self._models[k], X_normalized, y)
+        X_nrc, X_liwc, y = self._preprocess_data(raw_train_data)
+        print('Traning with nrc data ...')
+        for i, t in enumerate(self._targets):
+            print('-> %s' %t)
+            self._nrc_models[t].fit(X_nrc, y[:,i])
+        print('Traning with liwc data ...')
+        for i, t in enumerate(self._targets):
+            print('-> %s' %t)
+            self._liwc_models[t].fit(X_liwc, y[:,i])
     
     def predict(self, raw_test_data):
-        test_data = {}
+        print('Predict function ...')
+        print('Preprocessing...')
+        # Preprocess data
+        X_nrc, X_liwc, y = self._preprocess_data(raw_test_data)
+        nrc_result = np.empty((y.shape[0],len(self._targets)))
+        liwc_result = np.empty((y.shape[0],len(self._targets)))
+        print('Predicting with nrc...')
+        for i, t in enumerate(self._targets):
+            print('-> %s' %t)
+            nrc_result[:,i] = self._nrc_models[t].predict(X_nrc)
         
-        # Model utility
-        model_util = Model_Util()
-        # Preprocess
-        size = self._preprocess_data(raw_test_data, test_data)
-        result = np.empty((size,len(self._targets)))
-        
-        for i,t in enumerate(self._targets):
-            print('Target %s:' %t)
-            print('Selecting features...')
-            v = test_data[t]
-            X = v.iloc[:,1:-1]
-            columns =  self._selected_features[t]
-            X_sel = X[columns]
-            print('Normalizing...')
-            X_normalized = normalize(X_sel, axis = 0)
-            print('Predicting...')
-            model = self._models[t]
-            result[:,i] = model_util.predict_from_model(model, X_normalized)
-          
-        return result
+        print('Predicting with liwc...')
+        for i, t in enumerate(self._targets):
+            print('-> %s' %t)
+            liwc_result[:,i] = self._liwc_models[t].predict(X_liwc)
+        return .5 * (nrc_result + liwc_result)
     
     def fit(self, raw_train_data):
-        print('### FITTING FUNCTION ###')
+        print('### FITTING FUNCTION (Test only) ###')
               
         # Preprocess data
-        self._preprocess_data(raw_train_data, self._liwc_data)
-        
-        # Loading utility
-        model_util = Model_Util()
-        
+        X_nrc, X_liwc, y = self._preprocess_data(raw_train_data)
         # Training
-        accs = {}
-        for k, v in self._liwc_data.items():
-            print('Target %s:' %k)
-            X = v.iloc[:,1:-1]
-            y = v.iloc[:,-1]
-            print('Splitting data...')
-            X_train, X_test, y_train, y_test = model_util.split_data(X, y, test_percent=0.2)
-            columns =  model_util.select_features(X_train, y_train)
-            self._selected_features[k] = columns
-            print('Selecting features...')
-            X_train = X_train[columns]
-            X_test = X_test[columns]
-            print('Normalizing...')
-            X_train = normalize(X_train, axis = 0)
-            X_test = normalize(X_test, axis = 0)
-            print('Training...')
-            model = self._models[k]
-            model_util.train_model(model, X_train, y_train)
-            print('Predicting...')
-            acc = model_util.accuracy_model(model, X_test, y_test)
-            accs[k] = acc
-        return accs
-            
-    def fit2(self, raw_train_data):
-        print('### FITTING FUNCTION ###')
-             
-        # Preprocess data
-        self._preprocess_data(raw_train_data, self._liwc_data)
+        print('Cross Validation with nrc...')
+        for i, t in enumerate(self._targets):
+            print('-> %s' %t)
+            self._reg_util.fit_model_cv('Lasso', self._nrc_models[t], X_nrc, y[:,i], CV=10)
         
-        # Loading utility
-        model_util = Model_Util()
+        print('Cross Validation with liwc...')
+        for i, t in enumerate(self._targets):
+            print('-> %s' %t)
+            self._reg_util.fit_model_cv('Lasso', self._liwc_models[t], X_liwc, y[:,i], CV=10)
         
-        # Training
-        accs = {}
-        for k, v in self._liwc_data.items():
-            print('Target %s:' %k)
-            X = v.iloc[:,1:-1]
-            y = v.iloc[:,-1]
-            
-            print('Splitting data...')
-            columns =  model_util.select_features(X, y)
-            self._selected_features[k] = columns
-            X =  X[columns] 
-            X = normalize(X, axis = 0)
-            X_train, X_test, y_train, y_test = model_util.split_data(X, y, test_percent=0.15)
-            
-            print('Training...')
-            model = self._models[k]
-            model_util.train_model(model, X_train, y_train)
-            
-            print('Predicting...')
-            acc = model_util.accuracy_model(model, X_test, y_test)
-            accs[k] = acc
-            
-        return accs
-    
 
     def load_model(self):
         with open('./datavengers/persistence/personality/personality.model', 'rb') as fd:
             n_obj = pkl.load(fd)
-            self._selected_features = n_obj._selected_features
-            self._models = n_obj._models
+            self._targets = cp.deepcopy(n_obj._targets)
+            self._nrc_models =  cp.deepcopy(n_obj._nrc_models)
+            self._liwc_models = cp.deepcopy(n_obj._liwc_models)
+            self._data_util =  cp.deepcopy(n_obj._data_util)
+            self._reg_util =  cp.deepcopy(n_obj._reg_util)
     
     def save_model(self):
         with open('./datavengers/persistence/personality/personality.model', 'wb') as fd:
