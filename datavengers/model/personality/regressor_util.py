@@ -4,7 +4,6 @@ from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
-from mlxtend.regressor import StackingCVRegressor
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 
