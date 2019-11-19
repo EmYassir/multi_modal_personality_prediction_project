@@ -8,13 +8,14 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neural_network import MLPClassifier
-
 from datavengers.model.data import Data
 from datavengers.model.predictor import Predictor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
+from sklearn.feature_selection import chi2, SelectKBest
 from datavengers.model.relation_dictionary import RelationDictionary
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ class AgePredictor(Predictor):
         self._like_idx_dict = None
         self._page_dict = None
         self._selected_pages = None
+        self._vectorizer = None
 
     # def _preprocess_img_data(self, raw_data, is_test=True):
     #     oxford_data = raw_data.get_oxford()
@@ -116,7 +118,7 @@ class AgePredictor(Predictor):
         # Select pages
         self._selected_pages = {}
         for l in sorted_labels:
-            u_list = self._page_dict.get_n_pages_unique_to_label(l, 20000)
+            u_list = self._page_dict.get_n_pages_unique_to_label(l, 500000)
             for u in u_list:
                 self._selected_pages[u] = True
 
@@ -180,8 +182,8 @@ class AgePredictor(Predictor):
         # X_img, y_img = self._preprocess_img_data(raw_train_data, is_test=False)
         X_rel, y_rel = self._preprocess_relational_data(raw_train_data, is_test=False)
         self._rel_clf = MultinomialNB(alpha=0.01)
-        vectorizer = TfidfVectorizer().fit(X_rel)
-        X_rel = vectorizer.transform(X_rel)
+        self._vectorizer = TfidfVectorizer().fit(X_rel)
+        X_rel = self._vectorizer.transform(X_rel)
         self._rel_clf.fit(X_rel, y_rel)
         # X_txt, y_txt = self._preprocess_text_data(raw_train_data, is_test=False)
         # self._img_clf = KNeighborsClassifier(n_neighbors=100, weights="uniform")
@@ -194,8 +196,7 @@ class AgePredictor(Predictor):
         logger.info("### Starting predictions")
         # X_img = self._preprocess_img_data(raw_test_data)
         X_rel = self._preprocess_relational_data(raw_test_data, is_test=True)
-        vectorizer = TfidfVectorizer().fit(X_rel)
-        X_rel = vectorizer.transform(X_rel)
+        X_rel = self._vectorizer.transform(X_rel)
         # X_txt = self._preprocess_text_data(raw_test_data)
         # img_preds = pd.DataFrame(self._img_clf.predict(X_img))
         rel_preds = self._rel_clf.predict(X_rel)
@@ -220,6 +221,7 @@ class AgePredictor(Predictor):
             self._like_idx_dict = clazz._like_idx_dict
             self._page_dict = clazz._page_dict
             self._selected_pages = clazz._selected_pages
+            self._vectorizer = clazz._vectorizer
 
     def save_model(self, location="./datavengers/persistence/age/age_predictor.model"):
         logger.info("### Saving model")
@@ -263,17 +265,17 @@ if __name__ == "__main__":
                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Relation/Relation.csv",
                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Image/oxford.csv",
                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Profile/Profile.csv")
-    age_predictor = AgePredictor()
+    # age_predictor = AgePredictor()
     # age_predictor.train(train_data)
-    age_predictor.load_model('age_predictor.model')
-    preds = age_predictor.predict(train_data)
-    print(preds)
+    # age_predictor.save_model('./age_predictor.model')
+    # age_predictor.load_model('age_predictor.model')
+    # preds = age_predictor.predict(train_data)
     # train_data = age_predictor._preprocess_age_group_labels(train_data)
     # X_train, y_train = age_predictor._preprocess_relational_data(train_data)
     # X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, stratify=y_train, test_size=0.2, shuffle=True)
     # logger.info(f"### X_train shape {len(X_train)}")
     # logger.info(f"### X_test shape {len(X_test)}")
-    # # Creating words vectors
+    # # # Creating words vectors
     # logger.info("### Vectorizing")
     # vectorizer = TfidfVectorizer().fit(X_train)
     # X_train = vectorizer.transform(X_train)
@@ -293,6 +295,25 @@ if __name__ == "__main__":
     # models['SGDC squared_hinge loss, lr=optimal, alpha=0.001'] = SGDClassifier(loss='squared_hinge', learning_rate='optimal', alpha=0.01, early_stopping=True, validation_fraction=.1)
 
     # Testing
+    # for name, model in models.items():
+    #     test_model(name, model, X_train, X_test, y_train, y_test)
+    #
+    # logger.info('### End of experiment')
+
+    # train_data = age_predictor._preprocess_age_group_labels(train_data)
+    # user_ids = train_data.get_liwc().userId.values
+    # liwc_data = train_data.get_liwc().loc[:, 'WC':]
+    # labels = np.array(age_predictor._get_label_values(train_data, user_ids))
+    # unique_labels = np.unique(labels)
+    # selector = SelectKBest(k=30)
+    # X = selector.fit_transform(liwc_data, labels)
+    # X_train, X_test, y_train, y_test = train_test_split(X, labels, stratify=labels, test_size=0.2, shuffle=True)
+    # models = {}
+    # models['Multinomial Naive Bayes 0.01'] = MultinomialNB(alpha=0.01)
+    # models['MLP 1'] = MLPClassifier(activation='relu', solver='adam', alpha=0.0001, batch_size=200,
+    #                                 learning_rate='adaptive', shuffle=True, early_stopping=True, validation_fraction=.1,
+    #                                 verbose=True)
+    # # Testing
     # for name, model in models.items():
     #     test_model(name, model, X_train, X_test, y_train, y_test)
     #
