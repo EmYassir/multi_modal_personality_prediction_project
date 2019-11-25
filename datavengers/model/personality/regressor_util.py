@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
+from keras import backend as K
 
 
 class Regressor_Util:
@@ -49,7 +50,7 @@ class Regressor_Util:
     
     def score(self, y_pred, y_test):
         # RMSE
-        return np.sqrt(np.mean((y_pred - y_test)**2, axis = 0))
+        return np.round(np.sqrt(np.mean((y_pred - y_test)**2, axis = 0)) * 100.0, 3)
         
     def test_multiple_models(self, models, X_train, X_test, y_train, y_test):
         accs = {}
@@ -121,6 +122,9 @@ class Regressor_Util:
         acc = self.score_model(model, X_test, y_test)
         print('RMSE = %s' %acc)
         return acc
+    
+    def keras_rmse(self, y_true, y_pred):
+        return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1)) 
     
     def test_model_CV(self, model_name, model, X, y, CV = 5):
         
