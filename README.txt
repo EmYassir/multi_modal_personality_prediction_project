@@ -8,6 +8,7 @@ Firstly, it is required to create the conda environment. Please, execute manuall
     yes | conda install numpy
     yes | conda install pandas
     yes | conda install scikit-learn
+    yes | conda install -c conda-forge keras
     chmod +x ift6758
 
     (We had to do it this way now because conda stopped working in subshells and our source_env.sh script is not
