@@ -1,7 +1,17 @@
-Firstly, it is required to execute the env_config script in order to prepare the environment for the predictor.
-The exact following command must be executed:
+Firstly, it is required to create the conda environment. Please, execute manually the following commands:
 
-    source env_config.sh
+    module load anaconda/3
+    conda deactivate
+    conda env remove --name datavengers
+    yes | conda create -n datavengers
+    conda activate datavengers
+    yes | conda install numpy
+    yes | conda install pandas
+    yes | conda install scikit-learn
+    chmod +x ift6758
+
+    (We had to do it this way now because conda stopped working in subshells and our source_env.sh script is not
+    working correctly anymore)
 
 Afterwards, to obtain the predictions, the ift6758.sh file may be executed with the following options:
 
