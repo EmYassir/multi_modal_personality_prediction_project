@@ -9,7 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.metrics import accuracy_score
 from datavengers.model.relation_dictionary import RelationDictionary
-from keras import Sequential
+from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.models import model_from_json
 
