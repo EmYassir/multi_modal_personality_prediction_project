@@ -8,14 +8,16 @@ Firstly, it is required to create the conda environment. Please, execute manuall
     yes | conda install numpy
     yes | conda install pandas
     yes | conda install scikit-learn
-    chmod +x ift6758
+    yes | conda install tensorflow
+    yes | conda install -c conda-forge keras
+    export KERAS_BACKEND=tensorflow
 
     (We had to do it this way now because conda stopped working in subshells and our source_env.sh script is not
     working correctly anymore)
 
-Afterwards, to obtain the predictions, the ift6758.sh file may be executed with the following options:
+Afterwards, to obtain the predictions, the ift6758.py file may be executed with the following options:
 
-    ./ift6758 $OPTIONS
+    python ift6758.py $OPTIONS
 
    Required:
       -i TEST_DATA_PATH   absolute path to a test dataset with new instances
