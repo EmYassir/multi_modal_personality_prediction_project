@@ -1,6 +1,9 @@
 import numpy as np
 import pickle as pkl
 import logging
+import seaborn as sns
+import pandas as pd
+import matplotlib.pyplot as plt
 
 from keras.optimizers import Adam
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -141,7 +144,7 @@ class AgePredictor(Predictor):
         opt = Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999)
         classifier.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
         # Fitting the data to the training dataset
-        classifier.fit(x_train, oh_y_train, batch_size=64, epochs=25, sample_weight=compute_sample_weight('balanced', fit_y_train))
+        classifier.fit(x_train, oh_y_train, batch_size=64, epochs=30, sample_weight=compute_sample_weight('balanced', fit_y_train))
         logger.info("### Training done")
         self.save(classifier)
 
@@ -225,17 +228,19 @@ def test_model(model_name, model, X_train, X_test, y_train, y_test):
 
 
 # if __name__ == "__main__":
-    # train_data = Data("/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/liwc.csv",
-    #                   "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/nrc.csv",
-    #                   "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/Relation.csv",
-    #                   "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/oxford.csv",
-    #                   "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/Profile.csv")
-    # test_data = Data("/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Text/liwc.csv",
-    #                   "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Text/nrc.csv",
-    #                   "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Relation/Relation.csv",
-    #                   "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Image/oxford.csv",
-    #                   "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Profile/Profile.csv")
-    # age_predictor = AgePredictor()
-    # # age_predictor.train(train_data)
+#     train_data = Data("/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/liwc.csv",
+#                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/nrc.csv",
+#                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/Relation.csv",
+#                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/oxford.csv",
+#                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Train/Profile.csv")
+#     test_data = Data("/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Text/liwc.csv",
+#                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Text/nrc.csv",
+#                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Relation/Relation.csv",
+#                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Image/oxford.csv",
+#                       "/home/alexpehpeh/PycharmProjects/IFT6758_Project/data/Public_Test/Profile/Profile.csv")
+#     age_predictor = AgePredictor()
+    # age_predictor.train(train_data)
     # preds = age_predictor.predict(train_data)
     # print(preds)
+
+
