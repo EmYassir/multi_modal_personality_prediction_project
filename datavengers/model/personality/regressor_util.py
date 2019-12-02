@@ -35,7 +35,7 @@ class Regressor_Util:
         return self._pca.transform(X)
     
     def split_data(self, X, y, test_percent=0.20):
-        return train_test_split(X, y, test_size=test_percent)
+        return train_test_split(X, y, test_size=test_percent, shuffle=True)
         
     def train_model(self, model, X_train, y_train):
         model.fit(X_train, y_train)
