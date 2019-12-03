@@ -40,16 +40,16 @@ class Personality(Predictor):
         self._models={}
         # Instantiating epochs
         self._epochs={}
-        self._epochs['ope'] = 3
-        self._epochs['neu'] = 6
-        self._epochs['ext'] = 6
-        self._epochs['agr'] = 6
-        self._epochs['con'] = 6
+        self._epochs['ope'] = 4
+        self._epochs['neu'] = 7
+        self._epochs['ext'] = 7
+        self._epochs['agr'] = 7
+        self._epochs['con'] = 7
         
         # Instantiating seeds
         self._seeds={}
         self._seeds['ope'] = 42
-        self._seeds['neu'] = 42
+        self._seeds['neu'] = 12
         self._seeds['ext'] = 42
         self._seeds['agr'] = 42 
         self._seeds['con'] = 42
@@ -84,35 +84,36 @@ class Personality(Predictor):
         # Ope
         self._models['ope'] = Sequential()
         self._models['ope'].add(Dense(50, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['ope'].add(Dense(1, activation='linear'))
+        self._models['ope'].add(Dense(1, activation=self._reg_util.custom_activation))
         #self._models['ope'].summary()
         self._models['ope'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
         
         # Neu
         self._models['neu'] = Sequential()
         self._models['neu'].add(Dense(25, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['neu'].add(Dense(1, activation='linear'))
+        self._models['neu'].add(Dense(1, activation=self._reg_util.custom_activation))
         #self._models['neu'].summary()
         self._models['neu'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
         
         # Ext
         self._models['ext'] = Sequential()
         self._models['ext'].add(Dense(50, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['ext'].add(Dense(1, activation='linear'))
+        self._models['ext'].add(Dense(1, activation=self._reg_util.custom_activation))
         #self._models['ext'].summary()
         self._models['ext'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
         
         # Agr
         self._models['agr'] = Sequential()
         self._models['agr'].add(Dense(25, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['agr'].add(Dense(1, activation='linear'))
+        self._models['agr'].add(Dense(8, activation='relu')) 
+        self._models['agr'].add(Dense(1, activation=self._reg_util.custom_activation))
         #self._models['agr'].summary()
         self._models['agr'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
         
         # Con
         self._models['con'] = Sequential()
         self._models['con'].add(Dense(50, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['con'].add(Dense(1, activation='linear'))
+        self._models['con'].add(Dense(1, activation=self._reg_util.custom_activation))
         #self._models['con'].summary()
         self._models['con'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
         
@@ -140,7 +141,6 @@ class Personality(Predictor):
         print('Predicting...')
         for i, t in enumerate(self._targets):
             print('-> %s' %t)
-            self._set_seed(self._seeds[t])
             y_pred = self._models[t].predict(X)
             predictions[:,i] = y_pred[:,0]
         
@@ -161,7 +161,7 @@ class Personality(Predictor):
         history={}
         for i, t in enumerate(self._targets):
             print('-> %s' %t)
-            #self._set_seed(self._seeds[t])
+            self._set_seed(self._seeds[t])
             history[t] = self._models[t].fit(X_train, y_train[:, i], epochs=self._epochs[t], batch_size=100,  verbose=False, validation_split=0.1)
         
         print('Predicting...')
@@ -175,7 +175,8 @@ class Personality(Predictor):
         for t in self._targets:
             print('-> Loading %s model from disk ...' %t)
             with CustomObjectScope({'GlorotUniform': glorot_uniform()}):
-                self._models[t] = load_model('./datavengers/persistence/personality/model_'+ str(t) +'.h5', custom_objects={'keras_rmse': self._reg_util.keras_rmse})
+                self._models[t] = load_model('./datavengers/persistence/personality/model_'+ str(t) +'.h5', custom_objects={'keras_rmse': self._reg_util.keras_rmse,
+                            'custom_activation': self._reg_util.custom_activation})
     
     def save_model(self):
         print('Saving models...')
