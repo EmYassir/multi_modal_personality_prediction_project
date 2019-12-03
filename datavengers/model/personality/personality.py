@@ -66,8 +66,11 @@ class Personality(Predictor):
         profile = raw_data.get_profiles()
         print('Processing profile dataframe...')
         profile_df = self._data_util.preprocess_profile_df(profile)
+        print('profile_df columns',  profile_df.columns)
         reference = profile_df['userId']
         print('Gathering features...')
+        print('nrc columns',  nrc.columns)
+        print('liwc columns',  liwc.columns)
         nrc_df = self._data_util.align_features_df(nrc, reference)
         liwc_df = self._data_util.align_features_df(liwc, reference)
         print('Combining features...')
