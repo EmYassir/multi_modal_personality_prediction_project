@@ -108,7 +108,7 @@ class Data_Util:
     
      
     # Renames the profile's userId column
-    def preprocess_profile_df(self, profile_df):
+    def format_userid_column(self, profile_df):
         return profile_df.rename(columns={('userid'): ('userId')}, inplace=False)
     
     # Aligns features with userId column
