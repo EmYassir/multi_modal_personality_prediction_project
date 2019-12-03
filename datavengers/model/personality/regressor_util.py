@@ -35,7 +35,7 @@ class Regressor_Util:
         return self._pca.transform(X)
     
     def split_data(self, X, y, test_percent=0.20):
-        return train_test_split(X, y, test_size=test_percent)
+        return train_test_split(X, y, test_size=test_percent, shuffle=True)
         
     def train_model(self, model, X_train, y_train):
         model.fit(X_train, y_train)
@@ -125,6 +125,9 @@ class Regressor_Util:
     
     def keras_rmse(self, y_true, y_pred):
         return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1)) 
+    
+    def custom_activation(self, x):
+        return (K.sigmoid(x) * 5)
     
     def test_model_CV(self, model_name, model, X, y, CV = 5):
         
