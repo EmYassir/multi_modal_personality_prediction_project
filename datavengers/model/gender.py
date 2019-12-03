@@ -92,7 +92,7 @@ class Gender(Predictor):
       tags = raw_train_data.get_profiles()[['userid','gender']]
       tags['gender'] = tags['gender'].astype(int)
 
-      oxford_train_df = raw_train_data.get_oxford()
+      oxford_train_df = raw_train_data.get_oxford().copy()
       # Oxford file uses 'userId' instead of 'userid' ... so we apply lower case
       oxford_train_df.columns = [x.lower() for x in oxford_train_df.columns]
       oxford = pd.merge(tags, oxford_train_df, on="userid")
@@ -126,7 +126,7 @@ class Gender(Predictor):
       tags = raw_train_data.get_profiles()[['userid','gender']]
       tags['gender'] = tags['gender'].astype(int)
 
-      liwc_train_df = raw_train_data.get_liwc()
+      liwc_train_df = raw_train_data.get_liwc().copy()
       liwc_train_df.columns = [x.lower() for x in liwc_train_df.columns]
       liwc = pd.merge(tags, liwc_train_df, on="userid")
 
@@ -181,7 +181,7 @@ class Gender(Predictor):
 
 
     def predict_on_oxford(self, raw_test_data):
-      oxford_test_df = raw_test_data.get_oxford()
+      oxford_test_df = raw_test_data.get_oxford().copy()
       oxford_test_df.columns = [x.lower() for x in oxford_test_df.columns]
       # We add a column with face size
       oxford_test_df['face_size'] = oxford_test_df['facerectangle_width'] * oxford_test_df['facerectangle_height']
@@ -209,7 +209,7 @@ class Gender(Predictor):
 
 
     def predict_on_liwc(self, raw_test_data):
-      liwc_test_df = raw_test_data.get_liwc()
+      liwc_test_df = raw_test_data.get_liwc().copy()
       liwc_test_df.columns = [x.lower() for x in liwc_test_df.columns]
       test_users = raw_test_data.get_profiles()['userid']
       liwc_data = pd.merge(test_users, liwc_test_df, on="userid")
