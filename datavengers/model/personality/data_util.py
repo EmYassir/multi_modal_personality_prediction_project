@@ -78,14 +78,14 @@ class Data_Util:
 
     
     # Builds embeddings for relations df
-    '''
+    
     def build_relations_df(self, rel_df, max_features, profile_df, n_components, for_train = True):
         # Step 1: convert to strings
         relations  = rel_df.copy()
-        relations['like_id'] = rel_df['like_id'].astype(str)
+        relations['like_id'] = relations['like_id'].astype(str)
         # Step 2: Build sequences of pages likes
         merged_relations = relations.groupby('userid')['like_id'].apply((lambda x: "%s" % ' '.join(x))).reset_index()
-        merged_relations['like_id'] = merged_relations['like_id'].apply(lambda x: x.split())
+        #merged_relations['like_id'] = merged_relations['like_id'].apply(lambda x: x.split())
         if for_train == True:
             print('Creating vocabulary...')
             self._vocab = self.get_vocabulary(merged_relations)
@@ -104,12 +104,12 @@ class Data_Util:
             
         # End
         return merged_relations
-    '''
+    
     
      
     # Renames the profile's userId column
-    def format_userid_column(self, profile_df):
-        return profile_df.rename(columns={('userid'): ('userId')}, inplace=False)
+    def format_userid_column(self, df):
+        return df.rename(columns={('userid'): ('userId')}, inplace=False)
     
     # Aligns features with userId column
     def align_features_df(self, feat_df, reference):
@@ -123,10 +123,16 @@ class Data_Util:
     def extract_data(self, df):
         return (df.drop(['userId'], axis = 1)).to_numpy()
     
+    # Returns a dataframe with  selectedfeatures
+    def extract_feature_from_profile(self, profile, columns):
+        list_cols = ['userId'] + columns
+        new_df = profile[list_cols]
+        return new_df
+    
     # Scales features within a dataframe
     def scale_features(self, df, scale = ''):
         std_scaler = StandardScaler()
-        min_max_Scaler = MinMaxScaler()
+        min_max_Scaler = MinMaxScaler(0,1)
         transform = None
         if scale == 'minmax':
             transform = min_max_Scaler.fit_transform
@@ -150,3 +156,17 @@ class Data_Util:
         for df in feats:
             main_df = pd.merge(main_df, df, on='userId', how='inner')
         return main_df
+    
+    # Gets targets
+    def preprocess_age_df(self, age_df):
+        #{24: "xx-24", 34: "25-34", 49: "35-49", 1000: "50-xx"}
+        #{0: "xx-24", 25: "25-34", 35: "35-49", 50: "50-xx"}
+        new_age_df = age_df.copy()
+        new_age_df['age'] = new_age_df['age'].apply(lambda x: 0.0 if x < 25.0 else (25.0 if x < 35.0 else (35.0 if x < 50.0 else 50.0)))
+        return new_age_df
+        
+        
+    
+    
+    
+    
