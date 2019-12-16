@@ -32,7 +32,7 @@ model = Gender()
 
 print('Using pre-trained model...')
 # use False as 2nd argument to retrain...
-model.train(train_data_wrapper, True)
+model.train(train_data_wrapper, False)
 
 print('Generating predictions on the test set...')
 pred1 = model.predict(test_data_wrapper)
