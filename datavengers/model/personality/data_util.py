@@ -150,3 +150,12 @@ class Data_Util:
         for df in feats:
             main_df = pd.merge(main_df, df, on='userId', how='inner')
         return main_df
+    
+    # Gets targets
+    def preprocess_age_df(self, age_df):
+        #{24: "xx-24", 34: "25-34", 49: "35-49", 1000: "50-xx"}
+        #{0: "xx-24", 25: "25-34", 35: "35-49", 50: "50-xx"}
+        new_age_df = age_df.copy()
+        new_age_df['age'] = new_age_df['age'].apply(lambda x: 0.0 if x < 25.0 else (25.0 if x < 35.0 else (35.0 if x < 50.0 else 50.0))
+        return new_age_df
+        

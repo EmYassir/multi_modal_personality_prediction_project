@@ -1,20 +1,20 @@
+import random
+random.seed(1)
 import numpy as np
+np.random.seed(1)
 import pandas as pd
 import pickle as pkl
-import random
-
+import math
 
 
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
-#from tensorflow.python.keras.models import Sequential
-#from tensorflow.python.keras.layers import Dense
-#from tensorflow.python.keras.wrappers.scikit_learn import KerasRegressor
+
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasRegressor
-import tensorflow as tf
+from keras import optimizers
 
 from datavengers.model.personality.data_util import Data_Util
 from datavengers.model.personality.model_util import Model_Util
@@ -26,7 +26,7 @@ from keras.models import load_model
 
 from keras.utils import CustomObjectScope
 from keras.initializers import glorot_uniform
-
+from datavengers.model.gender import Gender
 
 
 class Personality(Predictor):
@@ -36,29 +36,30 @@ class Personality(Predictor):
         self._targets = np.array(['ope','neu','ext','agr','con'])
         self._data_util =  Data_Util()
         self._reg_util =  Regressor_Util()
+        
         # Instantiating models
         self._models={}
+        
         # Instantiating epochs
         self._epochs={}
-        self._epochs['ope'] = 4
-        self._epochs['neu'] = 7
-        self._epochs['ext'] = 7
+        self._epochs['ope'] = 5
+        self._epochs['neu'] = 6
+        self._epochs['ext'] = 6
         self._epochs['agr'] = 7
-        self._epochs['con'] = 7
+        self._epochs['con'] = 6
         
         # Instantiating seeds
         self._seeds={}
-        self._seeds['ope'] = 42
-        self._seeds['neu'] = 12
-        self._seeds['ext'] = 42
-        self._seeds['agr'] = 42 
-        self._seeds['con'] = 42
+        self._seeds['ope'] = 66
+        self._seeds['neu'] = 66
+        self._seeds['ext'] = 66
+        self._seeds['agr'] = 58 
+        self._seeds['con'] = 58
         
         
     def _set_seed(self, seed):
         random.seed(seed)
         np.random.seed(seed)
-        tf.random.set_seed(seed)
         
     def _preprocess_data(self, raw_data):
         nrc = raw_data.get_nrc()
@@ -82,40 +83,42 @@ class Personality(Predictor):
     
     def _init_models(self, dimensions):
         # Ope
+        self._set_seed(self._seeds['ope'])
+        self._set_seeds(seeds['ope'])
         self._models['ope'] = Sequential()
-        self._models['ope'].add(Dense(50, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['ope'].add(Dense(1, activation=self._reg_util.custom_activation))
-        #self._models['ope'].summary()
-        self._models['ope'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
+        self._models['ope'].add(Dense(25, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
+        self._models['ope'].add(Dense(1, activation='relu'))
+        self._models['ope'].compile(loss=self._reg_util.keras_rmse, optimizer='adadelta', metrics=['mse'])
         
         # Neu
+        self._set_seed(self._seeds['neu'])
         self._models['neu'] = Sequential()
-        self._models['neu'].add(Dense(25, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['neu'].add(Dense(1, activation=self._reg_util.custom_activation))
-        #self._models['neu'].summary()
-        self._models['neu'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
+        self._models['neu'].add(Dense(10, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
+        self._models['neu'].add(Dense(1, activation='relu'))
+        self._models['neu'].compile(loss=self._reg_util.keras_rmse, optimizer='adadelta', metrics=['mse'])
         
         # Ext
+        self._set_seed(self._seeds['ext'])
         self._models['ext'] = Sequential()
-        self._models['ext'].add(Dense(50, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['ext'].add(Dense(1, activation=self._reg_util.custom_activation))
-        #self._models['ext'].summary()
-        self._models['ext'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
+        self._models['ext'].add(Dense(100, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
+        self._models['ext'].add(Dense(1, activation='relu'))
+        self._models['ext'].compile(loss=self._reg_util.keras_rmse, optimizer='adadelta', metrics=['mse'])
         
         # Agr
+        self._set_seed(self._seeds['agr'])
         self._models['agr'] = Sequential()
-        self._models['agr'].add(Dense(25, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['agr'].add(Dense(8, activation='relu')) 
-        self._models['agr'].add(Dense(1, activation=self._reg_util.custom_activation))
-        #self._models['agr'].summary()
-        self._models['agr'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
+        self._models['agr'].add(Dense(50, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
+        self._models['agr'].add(Dense(10, activation='relu'))
+        self._models['agr'].add(Dense(1, activation='relu'))
+        self._models['agr'].compile(loss=self._reg_util.keras_rmse, optimizer='adadelta', metrics=['mse'])
         
         # Con
+        self._set_seed(self._seeds['con'])
         self._models['con'] = Sequential()
         self._models['con'].add(Dense(50, input_dim=dimensions, kernel_initializer='normal', activation='sigmoid'))
-        self._models['con'].add(Dense(1, activation=self._reg_util.custom_activation))
-        #self._models['con'].summary()
-        self._models['con'].compile(loss=self._reg_util.keras_rmse, optimizer='adam', metrics=['mse'])
+        self._models['con'].add(Dense(10, activation='relu'))
+        self._models['con'].add(Dense(1, activation='relu'))
+        self._models['con'].compile(loss=self._reg_util.keras_rmse, optimizer='adadelta', metrics=['mse'])
         
     # Public methods
     def train(self, raw_train_data):
@@ -162,7 +165,7 @@ class Personality(Predictor):
         for i, t in enumerate(self._targets):
             print('-> %s' %t)
             self._set_seed(self._seeds[t])
-            history[t] = self._models[t].fit(X_train, y_train[:, i], epochs=self._epochs[t], batch_size=100,  verbose=False, validation_split=0.1)
+            history[t] = self._models[t].fit(X_train, y_train[:, i], epochs=self._epochs[t], batch_size=50,  verbose=False, validation_split=0.1)
         
         print('Predicting...')
         for i, t in enumerate(self._targets):
