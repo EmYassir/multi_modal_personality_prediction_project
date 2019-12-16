@@ -146,8 +146,9 @@ class Personality(Predictor):
     def predict(self, raw_test_data):
         print('Predict function ...')
         print('Getting gender predictions...')
-       
-        # Preprocess data
+        
+        # Get gender predictions
+        self._gender_pred.train(None, preTrained = 'True')
         gender_preds = self._gender_pred.predict(raw_test_data)
         
         print('Preprocessing data ...')
