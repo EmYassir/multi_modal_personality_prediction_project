@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
-from sklearn.preprocessing import MinMaxScaler, QuantileTransformer
+from sklearn.preprocessing import MinMaxScaler, QuantileTransformer, RobustScaler
 
 from keras.models import Sequential
 from keras.layers import Dense
