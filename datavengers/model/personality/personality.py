@@ -17,7 +17,6 @@ from keras.wrappers.scikit_learn import KerasRegressor
 from keras import optimizers
 
 from datavengers.model.personality.data_util import Data_Util
-from datavengers.model.personality.model_util import Model_Util
 from datavengers.model.personality.regressor_util import Regressor_Util
 
 from datavengers.model.predictor import Predictor 
@@ -59,11 +58,12 @@ class Personality(Predictor):
         # Gender predictor
         self._gender_pred = Gender()
         
-        
+    # Intializes the seeds
     def _set_seed(self, seed):
         random.seed(seed)
         np.random.seed(seed)
         
+    # Pre-processes the data (NRC, LIWC, Gender)
     def _preprocess_data(self, raw_data):
         nrc = raw_data.get_nrc()
         liwc = raw_data.get_liwc()
@@ -85,7 +85,7 @@ class Personality(Predictor):
         y = self._data_util.extract_data(targets_df)
         return X, y
     
-    
+    # Initializes the neural nets
     def _init_models(self, dimensions):
         # Ope
         self._set_seed(self._seeds['ope'])
@@ -124,7 +124,7 @@ class Personality(Predictor):
         self._models['con'].add(Dense(1, activation='relu'))
         self._models['con'].compile(loss=self._reg_util.keras_rmse, optimizer='adadelta', metrics=['mse'])
         
-    # Public methods
+    # Train method
     def train(self, raw_train_data):
         print('Train function ...')
         print('Preprocessing...')
@@ -142,7 +142,7 @@ class Personality(Predictor):
         print('Training the gender model...')
         self._gender_pred.train(raw_train_data)
         
-    
+    # Predicts from data
     def predict(self, raw_test_data):
         print('Predict function ...')
         print('Getting gender predictions...')
@@ -165,6 +165,7 @@ class Personality(Predictor):
         
         return predictions
     
+    # Method for testing
     def fit(self, raw_train_data):
         print('### FITTING FUNCTION (Test only) ###')
         # Preprocess data
@@ -187,15 +188,16 @@ class Personality(Predictor):
         for i, t in enumerate(self._targets):
           y_pred = self._models[t].predict(X_test)
           print('-> %s: %f %%' %(t, self._reg_util.score(y_pred[:,0], y_test[:, i])))
-          
+    
+    # Loads the model from a file
     def load_model(self):
         print('Loading models...')
         for t in self._targets:
             print('-> Loading %s model from disk ...' %t)
             with CustomObjectScope({'GlorotUniform': glorot_uniform()}):
-                self._models[t] = load_model('./datavengers/persistence/personality/model_'+ str(t) +'.h5', custom_objects={'keras_rmse': self._reg_util.keras_rmse,
-                            'custom_activation': self._reg_util.custom_activation})
+                self._models[t] = load_model('./datavengers/persistence/personality/model_'+ str(t) +'.h5', custom_objects={'keras_rmse': self._reg_util.keras_rmse})
     
+    # Saves the model in a file
     def save_model(self):
         print('Saving models...')
         for t in self._targets:

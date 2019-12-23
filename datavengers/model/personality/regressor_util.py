@@ -8,7 +8,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from keras import backend as K
 
-
+# Utilisty class
 class Regressor_Util:
     
     def __init__(self):
@@ -34,24 +34,31 @@ class Regressor_Util:
     def pca_transform_features(self, X):
         return self._pca.transform(X)
     
+    
+    # Splits the train data
     def split_data(self, X, y, test_percent=0.20):
         return train_test_split(X, y, test_size=test_percent, shuffle=True)
-        
+    
+    # Trains a model
     def train_model(self, model, X_train, y_train):
         model.fit(X_train, y_train)
-        
+    
+    # Scales data
     def rescale_data(self, X, lower, upper):
         return MinMaxScaler(feature_range=[lower, upper]).fit_transform(X)
-        
+    
+    # Returns the score of a model
     def score_model(self, model, X_test, y_test):
         y_pred = model.predict(X_test)
         # RMSE
         return np.sqrt(np.mean((y_pred - y_test)**2, axis = 0))
     
+    # Returns the RMSE given two columns
     def score(self, y_pred, y_test):
         # RMSE
         return np.round(np.sqrt(np.mean((y_pred - y_test)**2, axis = 0)) * 100.0, 3)
-        
+    
+    # Tests multiple models
     def test_multiple_models(self, models, X_train, X_test, y_train, y_test):
         accs = {}
         for k, v in models.items():
@@ -63,6 +70,7 @@ class Regressor_Util:
             accs[k] = acc
         return accs
     
+    # Tests a model using Kfold
     def fit_model_cv(self, model_name, model, X, y, CV=5):
         print('Fitting model %s' %model_name)
         kfold = KFold(n_splits=CV, shuffle=True, random_state=156)
@@ -80,6 +88,8 @@ class Regressor_Util:
         print('RMSE = %f, std = %f' %(scores.mean(),scores.std()))
         return out_of_fold_predictions, scores
     
+    
+    # Tests stacking 
     def fit_stacked_models_cv(self, model_1, model_2, meta_model, X_1, X_2, y, CV=5):
         print('Fitting stacked models')
         kfold = KFold(n_splits=CV, shuffle=True, random_state=156)
@@ -115,7 +125,7 @@ class Regressor_Util:
         print('RMSE = %f, std = %f' %(scores.mean(),scores.std()))
         return oof_preds, scores
     
-    
+    # Tests model
     def test_model(self, model_name, model, X_train, X_test, y_train, y_test):
         print('Training with model %s ...' %model_name)
         self.train_model(model, X_train, y_train)
@@ -123,14 +133,13 @@ class Regressor_Util:
         print('RMSE = %s' %acc)
         return acc
     
+    # Custom loss function
     def keras_rmse(self, y_true, y_pred):
         return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1)) 
     
-    def custom_activation(self, x):
-        return (K.sigmoid(x) * 5)
-    
+
+    # Tests a model using kfold
     def test_model_CV(self, model_name, model, X, y, CV = 5):
-        
         scores = cross_val_score(model, X, y, scoring = 'r2', cv=CV)
         print(scores)
         sqrt_scores = np.sqrt(scores)
@@ -139,7 +148,7 @@ class Regressor_Util:
         print("R^2 Score: %f (+/- %f) [%s]" % (rmse, std, model_name))
         return rmse
     
-    '''
+    # Embedded method for feature selection (Lasso)
     def select_features(self, X, y, verbose = False):
         reg = LassoCV(cv=5, max_iter=1000000, tol = 0.1)
         reg.fit(X, y)
@@ -152,4 +161,4 @@ class Regressor_Util:
                   + "the other " +  str(sum(coef == 0)) + " variables")
         selected_features = np.array(coef[coef != 0].axes[0])
         return selected_features
-     '''  
+       
