@@ -7,6 +7,7 @@ Firstly, it is required to create the conda environment. Please, execute manuall
     conda activate datavengers
     yes | conda install numpy
     yes | conda install pandas
+    yes | conda install seaborn
     yes | conda install scikit-learn
     yes | conda install tensorflow
     yes | conda install -c conda-forge keras
