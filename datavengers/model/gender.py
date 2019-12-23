@@ -2,13 +2,12 @@ import pandas as pd
 import numpy as np
 import pickle as pkl
 
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.metrics import classification_report, accuracy_score
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report, accuracy_score
 from sklearn.svm import SVC
-from sklearn.preprocessing import MinMaxScaler, QuantileTransformer, RobustScaler
+from sklearn.preprocessing import QuantileTransformer, RobustScaler
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -16,8 +15,12 @@ from keras.layers import Dense
 from datavengers.model.data import Data
 from datavengers.model.predictor import Predictor
 
-class Gender():
+class Gender(Predictor):
+    """
+    This class includes all of the training and prediction logic for the Gender prediction task
+    """
     def __init__(self):
+      # Attributes to save the trained models
       self._relation_model = None
       self._oxford_model = None
       self._nrc_liwc_model = None
@@ -47,6 +50,7 @@ class Gender():
             pkl.dump(self._nrc_liwc_model, fd) 
 
     def format_relations(self, raw_relation_data):
+      # Formats the relations as a concatenated string of all page likes per user
       relations = raw_relation_data
       relations['like_id'] = raw_relation_data['like_id'].astype(str)
       merged_relations = relations.groupby('userid')['like_id'].apply((lambda x: "%s" % ' '.join(x))).reset_index()
@@ -54,12 +58,15 @@ class Gender():
 
 
     def train(self, raw_train_data, preTrained = 'True'):
+      # the training method
       if (preTrained):
+        # upload the saved pre-trained models
         self.load_relation_model()
         self.load_oxford_model()
         self.load_nrc_liwc_model()
 
       else:
+        # train the Models one by one
         # train the Model for Relation data 
         self.train_relations(raw_train_data)
 
@@ -73,6 +80,7 @@ class Gender():
       return
 
     def train_relations(self, raw_train_data):
+      # train the model with relations data
       tags = raw_train_data.get_profiles()[['userid','gender']]
       tags['gender'] = tags['gender'].astype(int)
 
@@ -91,6 +99,7 @@ class Gender():
       return
 
     def train_oxford(self, raw_train_data):
+      # train the model with Oxford data
       tags = raw_train_data.get_profiles()[['userid','gender']]
       tags['gender'] = tags['gender'].astype(int)
 
@@ -125,7 +134,7 @@ class Gender():
       return
 
     def train_nrc_liwc(self, raw_train_data):
-
+      # train the model with LIWC/NRC data (early fusion)
       tags = raw_train_data.get_profiles()[['userid','gender']]
       tags['gender'] = tags['gender'].astype(int)
 
@@ -160,6 +169,12 @@ class Gender():
       return
 
     def predict(self, raw_test_data):
+      # the prediction method that implemented the hybrid fusion
+      # where Oxford predictions are merged with LIWC/NRC predictions.
+      # The final model does not use the predictions
+      # based on Relations data
+
+      # We first generate the uni-modal predictions
       oxford_pred_df = self.predict_on_oxford(raw_test_data)
       nrliwc_pred_df = self.predict_on_nrc_liwc(raw_test_data)
 
@@ -177,7 +192,9 @@ class Gender():
       return np.array(merged_df['gender']).astype(int)
 
     
-    def predict_on_relation(self, raw_test_data):  
+    def predict_on_relation(self, raw_test_data):
+      # this method predicts gender based on relations data
+      # it is not used in the final model
       merged_relations = self.format_relations(raw_test_data.get_relation())
       X_test = merged_relations['like_id']
       prediction = self._relation_model.predict(X_test)
@@ -189,6 +206,7 @@ class Gender():
 
 
     def predict_on_oxford(self, raw_test_data):
+      # This method generates predictions based on Oxford data
       oxford_test_df = raw_test_data.get_oxford().copy()
       oxford_test_df.columns = [x.lower() for x in oxford_test_df.columns]
       # We add a column with face size
@@ -209,7 +227,7 @@ class Gender():
 
       prediction = self._oxford_model.predict_classes(X_scaled)
 
-      print("oxford prediction: ", len(prediction))
+      print("Oxford prediction: ", len(prediction))
 
       df = pd.DataFrame()
       df['userid'] = oxford_data['userid']
@@ -218,6 +236,7 @@ class Gender():
 
 
     def predict_on_nrc_liwc(self, raw_test_data):
+      # This method generates predictions based on NRC/LIWC data
       liwc_test_df = raw_test_data.get_liwc().copy()
       nrc_test_df = raw_test_data.get_nrc().copy()
       liwc_test_df.columns = [x.lower() for x in liwc_test_df.columns]
@@ -230,7 +249,7 @@ class Gender():
 
       X_test = nrc_liwc_data.drop(['userid'], axis = 1)
 
-      # We scale the data using QuantileTransformer
+      # We scale the data using sklearn's QuantileTransformer
       q_scaler = QuantileTransformer(100)
       X_scaled = q_scaler.fit_transform(X_test)
       
